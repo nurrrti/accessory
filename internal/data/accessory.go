@@ -2,6 +2,7 @@ package data
 
 import (
 	"accessory.nurtaymalika.com/internal/validator"
+	"database/sql"
 	"time"
 )
 
@@ -42,3 +43,52 @@ func ValidateAccessory(v *validator.Validator, accessory *Accessory) {
 // Movie runtime (in minutes)
 // Slice of genres for the movie (romance, comedy, etc.)
 // The version number starts at 1 and will be incremented each // time the movie information is updated
+type AccessoryModel struct {
+	DB *sql.DB
+}
+
+// Add a placeholder method for inserting a new record in the movies table.
+func (m AccessoryModel) Insert(accessory *Accessory) error {
+	query := `
+INSERT INTO accessory (title, year, price) VALUES (ipad, 2020, 4000)
+RETURNING id`
+	// Create an args slice containing the values for the // the movie struct. Declaring this slice immediately // make it nice and clear *what values are being used args := []any{movie.Title, movie.Year, movie.Runtime,
+	// Use the QueryRow() method to execute the SQL query
+	// passing in the args slice as a variadic parameter and scanning the system-
+	// generated id, created_at and version values into the movie struct.
+	return m.DB.QueryRow(query).Scan(&accessory.ID)
+}
+
+// Add a placeholder method for fetching a specific record from the movies table.
+func (m AccessoryModel) Get(id int64) (*Accessory, error) {
+	return nil, nil
+}
+
+// Add a placeholder method for updating a specific record in the movies table.
+func (m AccessoryModel) Update(accessory *Accessory) error {
+	return nil
+}
+
+// Add a placeholder method for deleting a specific record from the movies table.
+func (m AccessoryModel) Delete(id int64) error {
+	return nil
+}
+
+type MockAccessoryModel struct{}
+
+func (m MockAccessoryModel) Insert(accessory *Accessory) error {
+	// Mock the action...
+	return nil
+}
+func (m MockAccessoryModel) Get(id int64) (*Accessory, error) {
+	// Mock the action...
+	return nil, nil
+}
+func (m MockAccessoryModel) Update(accessory *Accessory) error {
+	// Mock the action...
+	return nil
+}
+func (m MockAccessoryModel) Delete(id int64) error {
+	// Mock the action...
+	return nil
+}
