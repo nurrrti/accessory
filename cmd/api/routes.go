@@ -14,6 +14,10 @@ func (app *application) routes() *httprouter.Router { // Initialize a new httpro
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/accessory", app.createAccessoryHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/accessory/:id", app.showAccessoryHandler)
+	router.HandlerFunc(http.MethodPost, "/v1/user", app.createUserHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/user/:id", app.showUserHandler)
+	router.HandlerFunc(http.MethodPost, "/v1/wish", app.createWishHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/wish/:id", app.showWishHandler)
 	// Return the httprouter instance.
 	return router
 }
