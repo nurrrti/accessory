@@ -1,0 +1,1 @@
+ALTER TABLE accessory ADD CONSTRAINT accessory_year_check CHECK (year BETWEEN 2000 AND date_part('year', now()));

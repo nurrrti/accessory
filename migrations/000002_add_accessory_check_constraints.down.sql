@@ -1,0 +1,1 @@
+ALTER TABLE accessory DROP CONSTRAINT IF EXISTS accessory_year_check;
