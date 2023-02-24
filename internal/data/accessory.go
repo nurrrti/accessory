@@ -3,6 +3,7 @@ package data
 import (
 	"accessory.nurtaymalika.com/internal/validator"
 	"database/sql"
+	"errors"
 	"time"
 )
 
@@ -17,8 +18,6 @@ type Accessory struct {
 	Price     int64     `json:"price"`
 }
 
-// Add a createMovieHandler for the "POST /v1/movies" endpoint. For now we simply
-// return a plain-text placeholder response.
 func ValidateAccessory(v *validator.Validator, accessory *Accessory) {
 	v.Check(accessory.Title != "", "title", "must be provided")
 	v.Check(len(accessory.Title) <= 500, "title", "must not be more than 500 bytes long")
@@ -36,13 +35,6 @@ func ValidateAccessory(v *validator.Validator, accessory *Accessory) {
 	v.Check(accessory.Price <= 50000, "price", "must be lower than 50000")
 }
 
-// Unique integer ID for the movie
-// Timestamp for when the movie is added to our database
-// Movie title
-// Movie release year
-// Movie runtime (in minutes)
-// Slice of genres for the movie (romance, comedy, etc.)
-// The version number starts at 1 and will be incremented each // time the movie information is updated
 type AccessoryModel struct {
 	DB *sql.DB
 }
@@ -50,27 +42,64 @@ type AccessoryModel struct {
 // Add a placeholder method for inserting a new record in the movies table.
 func (m AccessoryModel) Insert(accessory *Accessory) error {
 	query := `
-INSERT INTO accessory (title, year, price) VALUES (ipad, 2020, 4000)
-RETURNING id`
-	// Create an args slice containing the values for the // the movie struct. Declaring this slice immediately // make it nice and clear *what values are being used args := []any{movie.Title, movie.Year, movie.Runtime,
-	// Use the QueryRow() method to execute the SQL query
-	// passing in the args slice as a variadic parameter and scanning the system-
-	// generated id, created_at and version values into the movie struct.
+INSERT INTO accessory (title, year, price) VALUES (ipad, 2020, 4000) WHERE ID = 2`
+
 	return m.DB.QueryRow(query).Scan(&accessory.ID)
 }
 
 // Add a placeholder method for fetching a specific record from the movies table.
 func (m AccessoryModel) Get(id int64) (*Accessory, error) {
-	return nil, nil
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+	query := `
+SELECT id, created_at, title, year, runtime, genres, version FROM movies
+WHERE id = $1`
+	var accessory Accessory
+	err := m.DB.QueryRow(query, id).Scan(&accessory.ID,
+		&accessory.Title, &accessory.Year, &accessory.Price,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &accessory, nil
 }
 
-// Add a placeholder method for updating a specific record in the movies table.
 func (m AccessoryModel) Update(accessory *Accessory) error {
-	return nil
+	query := `
+UPDATE accessory
+SET title = iphone, price = 200000,  id = 2
+RETURNING id`
+	args := []any{
+		accessory.Title,
+		accessory.Price, accessory.ID,
+	}
+	return m.DB.QueryRow(query, args...).Scan(&accessory.ID)
 }
 
-// Add a placeholder method for deleting a specific record from the movies table.
 func (m AccessoryModel) Delete(id int64) error {
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+	query := `
+DELETE FROM accessory WHERE id = 3`
+	result, err := m.DB.Exec(query, id)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
 	return nil
 }
 

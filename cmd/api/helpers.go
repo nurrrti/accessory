@@ -11,7 +11,6 @@ import (
 	"strings"
 )
 
-// Retrieve the "id" URL parameter from the current request context, then convert it to // an integer and return it. If the operation isn't successful, return 0 and an error.
 func (app *application) readIDParam(r *http.Request) (int64, error) {
 	params := httprouter.ParamsFromContext(r.Context())
 	id, err := strconv.ParseInt(params.ByName("id"), 10, 64)
@@ -21,10 +20,8 @@ func (app *application) readIDParam(r *http.Request) (int64, error) {
 	return id, nil
 }
 
-// Define an envelope type.
 type envelope map[string]any
 
-// Change the data parameter to have the type envelope instead of any.
 func (app *application) writeJSON(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
 	js, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
@@ -45,7 +42,6 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 	dec := json.NewDecoder(r.Body)
 
 	dec.DisallowUnknownFields()
-	// Decode the request body to the destination.
 	err := dec.Decode(dst)
 	if err != nil {
 		var syntaxError *json.SyntaxError
@@ -65,14 +61,9 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 
 		case errors.Is(err, io.EOF):
 			return errors.New("body must not be empty")
-			// If the JSON contains a field which cannot be mapped to the target destination // then Decode() will now return an error message in the format "json: unknown // field "<name>"". We check for this, extract the field name from the error,
-			// and interpolate it into our custom error message. Note that there's an open // issue at https://github.com/golang/go/issues/29035 regarding turning this
-			// into a distinct error type in the future.
 		case strings.HasPrefix(err.Error(), "json: unknown field "):
 			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
 			return fmt.Errorf("body contains unknown key %s", fieldName)
-			// Use the errors.As() function to check whether the error has the type
-			// *http.MaxBytesError. If it does, then it means the request body exceeded our // size limit of 1MB and we return a clear error message.
 		case errors.As(err, &maxBytesError):
 			return fmt.Errorf("body must not be larger than %d bytes", maxBytesError.Limit)
 		case errors.As(err, &invalidUnmarshalError):
@@ -81,9 +72,6 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 			return err
 		}
 	}
-	// Call Decode() again, using a pointer to an empty anonymous struct as the
-	// destination. If the request body only contained a single JSON value this will // return an io.EOF error. So if we get anything else, we know that there is
-	// additional data in the request body and we return our own custom error message. err = dec.Decode(&struct{}{})
 	if err != io.EOF {
 		return errors.New("body must only contain a single JSON value")
 	}
